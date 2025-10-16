@@ -1,0 +1,44 @@
+name: Effia Checker
+
+# Permet d'écrire dans le repo (pour mettre à jour last_value.txt)
+permissions:
+  contents: write
+
+on:
+  schedule:
+    - cron: "0 * * * *"  # chaque heure à la minute 0
+  workflow_dispatch:     # permet de lancer manuellement via l'UI
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Run checker
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          RECEIVER: ${{ secrets.RECEIVER }}
+        run: |
+          python check_effia.py
+
+      - name: Commit last_value if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add last_value.txt
+          if ! git diff --staged --quiet; then
+            git commit -m "Update last_value"
+            git push
+          else
+            echo "No changes to commit."
+          fi
