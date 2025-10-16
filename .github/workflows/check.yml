@@ -31,16 +31,4 @@ jobs:
         run: |
           python check_effia.py
 
-        - name: Commit last_value if changed
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add last_value.txt
-          if ! git diff --staged --quiet; then
-            git commit -m "Update last_value"
-            git pull --rebase origin main
-            git push origin main
-          else
-            echo "No changes to commit."
-          fi
-
+        
